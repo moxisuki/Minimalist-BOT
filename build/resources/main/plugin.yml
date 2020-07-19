@@ -1,0 +1,6 @@
+name: "Minimalist-BOT"
+author: "Your Name"
+version: "0.1.0"
+main: "com.minimalist.code.BotInitialization"
+info: ""
+depends: []
