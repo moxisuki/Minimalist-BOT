@@ -17,4 +17,17 @@ public class PostDataToServer {
         Client.send(gson.toJson(code).toString());
         return null;
     }
+    /**
+     * Send Message to server
+     * @param Client Client Object
+     * @param nick User Nick
+     * @param content Message Content
+     * */
+    public static void RunToPlayerMeg(BotWSClient Client,String nick,String content) {
+        String demo = "tellraw @a {\"rawtext\":[{\"text\":\"{msg}\"}]}";
+        String msgdemo = "[§3群聊§r][§e{nick}§r] --> {content}".replace("{nick}",nick).replace("{content}",content);
+        String tmpmsg = demo.replace("{msg}",msgdemo);
+        System.out.println(tmpmsg);
+        RunCmd(Client,tmpmsg,"chat");
+    }
 }

@@ -26,16 +26,26 @@ public class BotEvent {
 
     public void Load(BotWSClient Clients) {
         bbs = bot.getEventListener().subscribeAlways(GroupMessage.class, (GroupMessage event) -> {
+            //定义事件返回内容及其初始化
+            String Content = event.getMessage().contentToString();
+            String Sender = String.valueOf(event.getSender().getId());
+            Config Players = BotInitialization.Players;
+            ConfigSection UserStatus = BotInitialization.UserStatus;
+            UserStatus.setIfAbsent(Sender, false);
+            Players.setIfAbsent(Sender, "");
+
+            if(event.getGroup().getId() == BotInitialization.GroupChat){
+                if(Content.contains("chat ")){
+                    String chat = Content.substring(5);
+                if(chat.length()>20){
+                    event.getGroup().sendMessage("汝言甚多");
+                }else if (chat.contains("§")){
+                    event.getGroup().sendMessage("在？为什么要变色");
+                }else{
+                    PostDataToServer.RunToPlayerMeg(Clients,event.getSender().getNick(),chat);
+                }
+            }}
             if(event.getGroup().getId() == BotInitialization.GroupMain) {
-                //定义事件返回内容及其初始化
-                String Content = event.getMessage().contentToString();
-                String Sender = String.valueOf(event.getSender().getId());
-                Config Players = BotInitialization.Players;
-                ConfigSection UserStatus = BotInitialization.UserStatus;
-                UserStatus.setIfAbsent(Sender, false);
-                Players.setIfAbsent(Sender, "");
-
-
                 //某聊天API处理
                 if (Content.contains("#* ")) {
                     String s = Content.substring(3);
