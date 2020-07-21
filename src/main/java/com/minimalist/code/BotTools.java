@@ -6,6 +6,7 @@ import io.reactivex.disposables.Disposable;
 import net.mamoe.mirai.Bot;
 import net.mamoe.mirai.contact.Group;
 import net.mamoe.mirai.message.GroupMessage;
+import net.mamoe.mirai.message.TempMessage;
 import net.mamoe.mirai.message.data.At;
 import net.mamoe.mirai.message.data.MessageUtils;
 
@@ -56,6 +57,17 @@ public class BotTools {
         );
     }
 
+    /**
+     * 发送带图片的消息模板模板
+     *
+     * @param event    事件类型
+     * @param filename 位于项目资源文件夹下的图片名
+     */
+    public static void SendPicture(TempMessage event, String filename) {
+        File file = new File(BotEvent.class.getResource("/" + filename).getPath());
+        event.getSender().sendMessage(MessageUtils.newImage(event.getGroup().uploadImage(file).getImageId()).plus("测试"));
+
+    }
     /**
      * 发送不带图片的群消息
      * 独立不依赖于Event
@@ -121,15 +133,15 @@ public class BotTools {
     }
         public static void Help(GroupMessage event){
         SendPictureMessage(event,"Good_job.png","游玩帮助已发送到私聊");
-        event.getSender().sendMessage("欢迎来到Minimalist !");
+        event.getSender().sendMessage("欢迎来到Minimalist(CecWorld) !");
         event.getSender().sendMessage("为了帮助您更好的游玩");
-        event.getSender().sendMessage("请认真阅读以下帮助：");
+        event.getSender().sendMessage("请认真阅读以下帮助");
         event.getSender().sendMessage("帮助文档：\n" +
                 "1→服务器介绍\n" +
                 "2→服务器玩法\n" +
                 "3→进入服务器\n" +
                 "4→支持服务器\n" +
-                "Ps：发送序号即可");
+                "Ps：发送帮助+序号即可");
         }
 
     //传入进程名称processName

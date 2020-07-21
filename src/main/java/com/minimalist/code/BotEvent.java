@@ -6,8 +6,11 @@ import com.minimalist.code.Utils.GetPassword;
 import com.minimalist.code.Utils.PostDataToServer;
 import net.mamoe.mirai.console.plugins.Config;
 import net.mamoe.mirai.console.plugins.ConfigSection;
+import net.mamoe.mirai.contact.Friend;
 import net.mamoe.mirai.event.Listener;
+import net.mamoe.mirai.message.FriendMessage;
 import net.mamoe.mirai.message.GroupMessage;
+import net.mamoe.mirai.message.TempMessage;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.PostConstruct;
@@ -34,18 +37,19 @@ public class BotEvent {
             UserStatus.setIfAbsent(Sender, false);
             Players.setIfAbsent(Sender, "");
 
-            if(event.getGroup().getId() == BotInitialization.GroupChat){
-                if(Content.contains("chat ")){
-                    String chat = Content.substring(5);
-                if(chat.length()>20){
-                    event.getGroup().sendMessage("汝言甚多");
-                }else if (chat.contains("§")){
-                    event.getGroup().sendMessage("在？为什么要变色");
-                }else{
-                    PostDataToServer.RunToPlayerMeg(Clients,event.getSender().getNick(),chat);
+            if (event.getGroup().getId() == BotInitialization.GroupChat) {
+                if (Content.contains("#转发 ")) {
+                    String chat = Content.substring(4);
+                    if (chat.length() > 20) {
+                        event.getGroup().sendMessage("汝言甚多");
+                    } else if (chat.contains("§")) {
+                        event.getGroup().sendMessage("在？为什么要变色");
+                    } else {
+                        PostDataToServer.RunToPlayerMeg(Clients, event.getSender().getNick(), chat);
+                    }
                 }
-            }}
-            if(event.getGroup().getId() == BotInitialization.GroupMain) {
+            }
+            if (event.getGroup().getId() == BotInitialization.GroupMain) {
                 //某聊天API处理
                 if (Content.contains("#* ")) {
                     String s = Content.substring(3);
@@ -59,7 +63,7 @@ public class BotEvent {
                     }
                 }
                 //在线玩家
-                else if (Content.equals("#Players")) {
+                else if (Content.equals("#在线玩家")) {
                     try {
                         event.getGroup().sendMessage("正在查询...");
                         Thread.sleep(1000);
@@ -69,7 +73,7 @@ public class BotEvent {
                     PostDataToServer.RunCmd(Clients, "list", "Players");
                 }
                 //1.绑定开始 ---Step 1
-                if (Content.equals("#BindBE")) {
+                if (Content.equals("#绑定BE")) {
                     //判断是否绑定过
                     if (Players.getString(Sender).equals("")) {
                         //未绑定
@@ -114,7 +118,7 @@ public class BotEvent {
                     }
                 }//处理结束
                 //2.个人信息
-                else if (Content.equals("#About")) {
+                else if (Content.equals("#关于")) {
                     //信息集合
                     String BEID = Players.getString(Sender);
 
@@ -131,7 +135,7 @@ public class BotEvent {
                     }
                 }//个人信息结束
                 //3.解绑BE
-                else if (Content.equals("#UnBindBE")) {
+                else if (Content.equals("#解除绑定BE")) {
 
                     //判断是否绑定
                     if (isBindBe(Sender)) {
@@ -144,48 +148,79 @@ public class BotEvent {
                     }
                 }//解绑结束
                 //申请白名单
-                else if(Content.equals("#GetWhiteList")){
-                    if(isBindBe(Sender)){
+                else if (Content.equals("#申请白名单")) {
+                    if (isBindBe(Sender)) {
                         //已绑定
-                        String whitelist = "whitelist add \""+Players.getString(Sender)+"\"";
-                         try {
-                             BotTools.SendPictureMessage(event,"Eat.png","正在提交您的申请...");
-                             Thread.sleep(2000);
-                             PostDataToServer.RunCmd(Clients,whitelist,"whitelist");
+                        String whitelist = "whitelist add \"" + Players.getString(Sender) + "\"";
+                        try {
+                            BotTools.SendPictureMessage(event, "Eat.png", "正在提交您的申请...");
+                            Thread.sleep(2000);
+                            PostDataToServer.RunCmd(Clients, whitelist, "whitelist");
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                             BotTools.sendGroupMessageToNain("申请失败，错误日志已发送到私聊");
                             event.getSender().sendMessage(e.toString());
                         }
-                    }else{
+                    } else {
                         //未绑定
                         BotTools.SendPictureMessage(event, "Question.png", "您都还没绑定呢");
                     }
 
                 }//申请白名单结束
                 //服务器状态查询
-                else if(Content.equals("#Status")){
-                    if(BotTools.findProcess("bedrock_server.exe")){
-                        BotTools.SendPictureMessage(event,"Star.png","服务器状态正常");
-                    }else{
-                        BotTools.SendPictureMessage(event,"Cry.png","服务器状态异常");
+                else if (Content.equals("#状态")) {
+                    if (BotTools.findProcess("bedrock_server.exe")) {
+                        BotTools.SendPictureMessage(event, "Star.png", "服务器状态正常");
+                    } else {
+                        BotTools.SendPictureMessage(event, "Cry.png", "服务器状态异常");
                     }
                 }
                 //帮助
-                else if(Content.equals("#Help")){
-                BotTools.Help(event);
-                }
-                else if(Content.equals("#CB")){
+                else if (Content.equals("#帮助")) {
+                    BotTools.Help(event);
+                } else if (Content.equals("#我的CB")) {
                     event.getGroup().sendMessage("正在为您查询...");
-                    PostDataToServer.RunCmd(Clients,"money query \""+Players.getString(Sender)+"\"","money query");
+                    PostDataToServer.RunCmd(Clients, "money query \"" + Players.getString(Sender) + "\"", "money query");
+                } else if(Content.equals("#指令列表")){
+                    BotTools.SendPictureMessage(event,"help.png","指令列表");
                 }
-            }});
+            }
+        });
+        bot.getEventListener().subscribeAlways(TempMessage.class, (TempMessage event) -> {
+            String Content = event.getMessage().contentToString();
+            switch (Content) {
+                case "帮助1":
+                    event.getSender().sendMessage("————介绍————");
+                    event.getSender().sendMessage("本服务器为公益服");
+                    event.getSender().sendMessage("靠着大家的热爱走在一起");
+                    event.getSender().sendMessage("希望大家能珍惜在这里的一切");
+                    event.getSender().sendMessage("本服白名单获取方式为自动化");
+                    event.getSender().sendMessage("采用Bot(机器人)24*7h自助受理");
+                    event.getSender().sendMessage("同各大腐竹构建了云黑项目");
+                    event.getSender().sendMessage("任何违规入库玩家是没有权益的");
+                    event.getSender().sendMessage("祝您游戏愉快！");
+                    break;
+                case "帮助2":
+                    event.getSender().sendMessage("————玩法————");
+                    event.getSender().sendMessage("服务器实现了大部分数据互通");
+                    event.getSender().sendMessage("请务必加入信息互通群");
+                    event.getSender().sendMessage("https://jq.qq.com/?_wv=1027&k=odjVDfLc");
+                    break;
+                case "帮助3":
+                    event.getSender().sendMessage("————进服帮助————");
+                   event.getSender().sendMessage("请阅读以下链接：\nhttps://docs.qq.com/doc/DSUVURGF5UVlYZ2Z6");
+                   break;
+                case "服务器信息":
+                    event.getSender().sendMessage("IP：s2.proton.pub\nPort：19132");
+                    break;
+            }
+        });
     }
 
     private boolean isBindBe(String sender) {
-        if (Players.exist(sender)){
+        if (Players.exist(sender)) {
             return !Players.getString(sender).equals("");
-        }else{
+        } else {
             return false;
         }
     }

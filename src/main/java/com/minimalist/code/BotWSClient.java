@@ -14,6 +14,8 @@ import java.util.TimerTask;
 
 public class BotWSClient extends WebSocketClient {
 
+    private BotWSClient bbc;
+
     public BotWSClient(URI serverUri, Draft draft) {
         super(serverUri, draft);
     }
@@ -40,7 +42,9 @@ public class BotWSClient extends WebSocketClient {
     @Override
     public void onClose(int code, String reason, boolean remote) {
         BotEvent.Clientstatus.remove("Status");
-        BotEvent.bbs.complete();
+        if (BotEvent.bbs != null) {
+            BotEvent.bbs.complete();
+        }
         // The codecodes are documented in class org.java_websocket.framing.CloseFrame
         BotTools.sendGroupMessage("服务器响应失败");
         try {
@@ -51,6 +55,7 @@ public class BotWSClient extends WebSocketClient {
         }
 
                 BotEvent b = new BotEvent();
+                bbc = b.OpenClient();
                 //初始化事件类
                 BotEvent ini = new BotEvent();
                 ini.Load(b.OpenClient());
@@ -61,7 +66,6 @@ public class BotWSClient extends WebSocketClient {
         ex.printStackTrace();
         // if the error is fatal then onClose will be called additionally
     }
-
 
 
 }
